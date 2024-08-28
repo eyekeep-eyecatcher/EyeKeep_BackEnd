@@ -8,7 +8,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table
+@Table(name = "Seoul_CCTV")
 public class CCTVEntity {
 
     @Id
