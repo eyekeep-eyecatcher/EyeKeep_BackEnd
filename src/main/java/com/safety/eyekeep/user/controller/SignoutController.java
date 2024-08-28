@@ -5,12 +5,14 @@ import com.safety.eyekeep.user.service.RedisService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,11 +22,13 @@ public class SignoutController {
     private final RedisService redisService;
 
     @PostMapping("/signout")
-    public ResponseEntity<?> signout(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> signout(HttpServletRequest request) {
         String refresh = null;
         Cookie[] cookies = request.getCookies();
         if(cookies == null) {
-            return new ResponseEntity<>("Cookie is null", HttpStatus.BAD_REQUEST);
+            Map<String, Object> message = new HashMap<>();
+            message.put("message", "Cookie is null");
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         }
 
         for(Cookie cookie : cookies) {
@@ -34,7 +38,9 @@ public class SignoutController {
         }
 
         if(refresh == null) {
-            return new ResponseEntity<>("Refresh token is null", HttpStatus.BAD_REQUEST);
+            Map<String, Object> message = new HashMap<>();
+            message.put("message", "Refresh token is null");
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         }
 
         // 유효기간 확인
@@ -43,26 +49,29 @@ public class SignoutController {
         try {
             category = jwtUtil.getCategory(refresh);
         } catch (ExpiredJwtException e) {
-            return new ResponseEntity<>("Refresh token expired", HttpStatus.BAD_REQUEST);
+            Map<String, Object> message = new HashMap<>();
+            message.put("message", "Refresh token expired");
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         }
 
         if(!category.equals("refresh")) {
-            return new ResponseEntity<>("Invalid refresh token", HttpStatus.BAD_REQUEST);
+            Map<String, Object> message = new HashMap<>();
+            message.put("message", "Invalid refresh token");
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         }
 
         String key = jwtUtil.getUsername(refresh);
 
         if(redisService.checkExistsValue(redisService.getValues(key))) {
-            return new ResponseEntity<>("No exists in redis refresh token", HttpStatus.BAD_REQUEST);
+            Map<String, Object> message = new HashMap<>();
+            message.put("message", "No exists in redis refresh token");
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         }
 
         redisService.deleteValues(key);
 
-        Cookie cookie = new Cookie("refresh", null);
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
-
-        response.addCookie(cookie);
-        return new ResponseEntity<>("Signout complete", HttpStatus.OK);
+        Map<String, Object> message = new HashMap<>();
+        message.put("message", "Signed out successfully");
+        return new ResponseEntity<>(message, HttpStatus.OK);
     }
 }

@@ -43,6 +43,15 @@ dependencies {
     implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.12.3'
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.12.3'
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.12.3'
+    // gson //
+    implementation 'com.google.code.gson:gson:2.8.8'
+    // opencsv //
+    implementation 'com.opencsv:opencsv:5.5.2'
+    // hibernate-spatial //
+    implementation 'org.locationtech.jts:jts-core:1.18.0'
+    implementation 'org.hibernate:hibernate-spatial:6.5.2.Final'
+    // FCM //
+    implementation 'com.google.firebase:firebase-admin:9.2.0'
 }
 
 tasks.named('test') {

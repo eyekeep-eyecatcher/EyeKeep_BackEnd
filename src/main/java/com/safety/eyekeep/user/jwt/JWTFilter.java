@@ -1,7 +1,8 @@
 package com.safety.eyekeep.user.jwt;
 
-import com.safety.eyekeep.user.domain.CustomOAuth2User;
-import com.safety.eyekeep.user.dto.UserDTO;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.safety.eyekeep.user.domain.CustomUserDetails;
+import com.safety.eyekeep.user.domain.UserEntity;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -14,7 +15,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 @RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
@@ -25,6 +27,7 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
 
         // 요청 헤더에 있는 access라는 값을 가져오자 이게 accessToken이다.
         String accessToken = request.getHeader("access");
@@ -45,33 +48,33 @@ public class JWTFilter extends OncePerRequestFilter {
             category = jwtUtil.getCategory(originToken);
         } catch (ExpiredJwtException e) {
             // 만약 ExpiredJwtException이 발생하면, 응답을 생성합니다.
-            PrintWriter writer = response.getWriter();
-            writer.println("access token expired");
-
             // HTTP 응답 상태 코드를 401 (Unauthorized)로 설정합니다.
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            Map<String, Object> msg = new HashMap<>();
+            msg.put("message", "Access token expired");
+            objectMapper.writeValue(response.getWriter(), msg);
             return;
         }
 
         // JWTFilter는 요청에 대해 accessToken만 취급하므로 access인지 확인
         if (!"access".equals(category)) {
-            PrintWriter writer = response.getWriter();
-            writer.println("invalid access token");
-
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            Map<String, Object> msg = new HashMap<>();
+            msg.put("message", "Invalid access token");
+            objectMapper.writeValue(response.getWriter(), msg);
             return;
         }
 
         // 사용자명과 권한을 accessToken에서 추출
-        UserDTO userDTO = new UserDTO();
-        userDTO.setUsername(jwtUtil.getUsername(originToken));
-        userDTO.setPassword(null);
-        userDTO.setName(null);
-        userDTO.setRole(jwtUtil.getRole(originToken));
+        UserEntity userEntity = new UserEntity();
+        userEntity.setUsername(jwtUtil.getUsername(originToken));
+        userEntity.setPassword(null);
+        userEntity.setNickname(null);
+        userEntity.setRole(jwtUtil.getRole(originToken));
 
-        CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
+        CustomUserDetails customUserDetails = new CustomUserDetails(userEntity);
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
+        Authentication authentication = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         filterChain.doFilter(request, response);

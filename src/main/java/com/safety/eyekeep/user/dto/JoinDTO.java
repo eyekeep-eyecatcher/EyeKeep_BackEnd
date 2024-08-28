@@ -14,16 +14,15 @@ public class JoinDTO {
     private String username;
     private String password;
     private String passwordCheck;
-    private String name;
-    private String role;
+    private String nickname;
 
     // password encryption O
     public UserEntity toEntity(String encodedPassword){
         UserEntity userEntity = new UserEntity();
         userEntity.setUsername(this.username);
         userEntity.setPassword(encodedPassword);
-        userEntity.setName(this.name);
-        userEntity.setRole(this.role);
+        userEntity.setNickname(this.nickname);
+        userEntity.setRole(null);
         return userEntity;
     }
 }

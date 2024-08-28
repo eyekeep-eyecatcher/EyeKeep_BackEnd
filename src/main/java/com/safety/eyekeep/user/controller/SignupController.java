@@ -7,6 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequiredArgsConstructor
 public class SignupController {
@@ -16,18 +19,26 @@ public class SignupController {
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody JoinDTO joinDto){
         if(signupService.checkLoginIdDuplicate(joinDto.getUsername())){
-            return new ResponseEntity<>("Email already in use", HttpStatus.BAD_REQUEST);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Email");
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
 
-        if(signupService.checkNameDuplicate(joinDto.getName())){
-            return new ResponseEntity<>("Name already in use", HttpStatus.BAD_REQUEST);
+        if(signupService.checkNameDuplicate(joinDto.getNickname())){
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "NickName");
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
 
         if(!signupService.checkPasswordRight(joinDto.getPassword(), joinDto.getPasswordCheck())){
-            return new ResponseEntity<>("Password does not match", HttpStatus.BAD_REQUEST);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Password");
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
 
         signupService.join(joinDto);
-        return new ResponseEntity<>("Signup Successful", HttpStatus.OK);
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Success");
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

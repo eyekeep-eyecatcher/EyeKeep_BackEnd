@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,7 +32,9 @@ public class ReissueController {
         String refresh = null;
         Cookie[] cookies = request.getCookies();
         if(cookies == null) {
-            return new ResponseEntity<>("Cookie is null", HttpStatus.BAD_REQUEST);
+            Map<String, Object> message = new HashMap<>();
+            message.put("message", "Cookie is null");
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         }
         for(Cookie cookie : cookies) {
             if("refresh".equals(cookie.getName())) {
@@ -41,7 +45,9 @@ public class ReissueController {
         // 검증 시작
         // refreshToken이 없는 경우
         if(refresh == null) {
-            return new ResponseEntity<>("Refresh token is null", HttpStatus.BAD_REQUEST);
+            Map<String, Object> message = new HashMap<>();
+            message.put("message", "Refresh token is null");
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         }
 
         // 유효기간 확인
@@ -50,11 +56,15 @@ public class ReissueController {
         try {
             category = jwtUtil.getCategory(refresh);
         } catch (ExpiredJwtException e) {
-            return new ResponseEntity<>("Refresh token expired", HttpStatus.BAD_REQUEST);
+            Map<String, Object> message = new HashMap<>();
+            message.put("message", "Refresh token is expired");
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         }
 
         if(!category.equals("refresh")) {
-            return new ResponseEntity<>("Invalid refresh token", HttpStatus.BAD_REQUEST);
+            Map<String, Object> message = new HashMap<>();
+            message.put("message", "Invalid refresh token");
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         }
 
         // 새로운 Token을 만들기 위해 준비
@@ -63,7 +73,9 @@ public class ReissueController {
 
         // Redis내에 존재하는 refreshToken인지 확인
         if(redisService.checkExistsValue(redisService.getValues(username))) {
-            return new ResponseEntity<>("No exists in redis refresh token", HttpStatus.BAD_REQUEST);
+            Map<String, Object> message = new HashMap<>();
+            message.put("message", "No exists in redis refresh token");
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
         }
 
         // 새로운 JWT Token 생성
@@ -77,6 +89,8 @@ public class ReissueController {
         response.setHeader("access", "Bearer " + newAccessToken);
         response.addCookie(createCookie.createCookie("refresh", newRefreshToken));
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        Map<String, Object> message = new HashMap<>();
+        message.put("message", "Reissue refresh token success");
+        return new ResponseEntity<>(message, HttpStatus.OK);
     }
 }

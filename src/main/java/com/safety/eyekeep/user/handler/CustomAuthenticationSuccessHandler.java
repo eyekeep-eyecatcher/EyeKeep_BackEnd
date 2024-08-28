@@ -11,35 +11,34 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
-public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {//implements AuthenticationSuccessHandler {
-
-    // private final ObjectMapper objectMapper;
+public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JWTUtil jwtUtil;
     private final RedisService redisService;
     private final CreateCookie createCookie;
+    private final ObjectMapper objectMapper;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
-                                        Authentication authentication) {
-        // objectMapper.writeValue(response.getWriter(), user);
+                                        Authentication authentication) throws IOException {
 
-        UserDetails customUserDetail = (CustomUserDetails) authentication.getPrincipal();
+        UserDetails userDetail = (CustomUserDetails) authentication.getPrincipal();
 
         // 토큰 생성시에 사용자명과 권한이 필요하니 준비하자
-        String username = customUserDetail.getUsername();
+        String username = userDetail.getUsername();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
@@ -54,9 +53,17 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         redisService.setValues(username, refreshToken, Duration.ofMillis(86400000L));
 
         // 응답
+        Map<String, Object> msg = new HashMap<>();
+        msg.put("message", "Login success");
         response.setHeader("access", "Bearer " + accessToken);
         response.addCookie(createCookie.createCookie("refresh", refreshToken));
         response.setStatus(HttpStatus.OK.value());
-        /*response.sendRedirect("http://localhost:8080/");*/        // 로그인 성공시 프론트에 알려줄 redirect 경로
+        response.setContentType("application/json"); // 응답 타입 설정
+
+        // ObjectMapper를 사용하여 Map을 JSON으로 변환
+        String jsonResponse = objectMapper.writeValueAsString(msg);
+
+        // JSON 응답 본문에 작성
+        response.getWriter().write(jsonResponse);
     }
 }

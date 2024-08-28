@@ -24,7 +24,7 @@
 #
 #   (1) You need a POSIX-compliant shell to run this script. If your /bin/sh is
 #       noncompliant, but you have some other compliant shell such as ksh or
-#       bash, then to run this script, type that shell name before the whole
+#       bash, then to run this script, type that shell nickname before the whole
 #       command line, like:
 #
 #           ksh Gradle
@@ -161,7 +161,7 @@ fi
 
 # Collect all arguments for the java command, stacking in reverse order:
 #   * args from the command line
-#   * the main class name
+#   * the main class nickname
 #   * -classpath
 #   * -D...appname settings
 #   * --module-path (only if needed)

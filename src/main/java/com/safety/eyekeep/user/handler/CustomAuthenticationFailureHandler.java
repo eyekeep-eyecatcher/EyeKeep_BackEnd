@@ -14,6 +14,8 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -40,6 +42,8 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
             errMsg = "Expired password";
         }
 
-        objectMapper.writeValue(response.getWriter(), errMsg);
+        Map<String, Object> msg = new HashMap<>();
+        msg.put("message", errMsg);
+        objectMapper.writeValue(response.getWriter(), msg);
     }
 }

@@ -23,9 +23,15 @@ public class UserEntity {
     @Column(name = "PASSWORD")
     private String password;
 
-    @Column(unique = true, name = "NAME")
-    private String name;
+    @Column(unique = true, name = "NICKNAME")
+    private String nickname;
 
     @Column(name = "ROLE")
     private String role;
+
+    @Column
+    private String fcmToken;
+
+    @Column
+    private String family;
 }

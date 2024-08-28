@@ -4,11 +4,9 @@ import com.safety.eyekeep.user.exception.CustomAccessDeniedHandler;
 import com.safety.eyekeep.user.exception.CustomLoginAuthenticationEntryPoint;
 import com.safety.eyekeep.user.handler.CustomAuthenticationFailureHandler;
 import com.safety.eyekeep.user.handler.CustomAuthenticationSuccessHandler;
-import com.safety.eyekeep.user.handler.CustomOAuth2SuccessHandler;
 import com.safety.eyekeep.user.jwt.JWTFilter;
 import com.safety.eyekeep.user.jwt.JWTUtil;
 import com.safety.eyekeep.user.login.CustomAuthenticationFilter;
-import com.safety.eyekeep.user.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,8 +27,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JWTUtil jwtUtil;
-    private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
-    private final CustomOAuth2UserService customOAuth2UserService;
 
     private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
     private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
@@ -62,13 +58,6 @@ public class SecurityConfig {
                 .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(customAuthenticationFilter(), JWTFilter.class);
 
-        //oauth2
-        http
-                .oauth2Login(oauth2 -> oauth2
-                        .successHandler(customOAuth2SuccessHandler)
-                        .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig
-                                .userService(customOAuth2UserService)));
-
         //exceptionhandling
         http
                 .exceptionHandling(exceptionHandling ->
@@ -82,6 +71,13 @@ public class SecurityConfig {
                         .requestMatchers("/reissue").permitAll()
                         .requestMatchers("/signup").permitAll()
                         .requestMatchers("/signout").permitAll()
+                        .requestMatchers("/save/**").permitAll()
+                        .requestMatchers("/safetydata/**").hasAuthority("ADMIN")
+                        .requestMatchers("/save/location").hasAuthority("Child")
+                        .requestMatchers("/request/location/**").hasAuthority("Parent")
+                        .requestMatchers("/fcm/request").hasAuthority("Parent")
+                        .requestMatchers("/fcm/accept").hasAuthority("Child")
+                        .requestMatchers("/fcm/emergency").hasAuthority("Child")
                         .anyRequest().authenticated());
 
         //세션 설정 : STATELESS

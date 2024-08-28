@@ -1,5 +1,6 @@
 package com.safety.eyekeep.user.service;
 
+import com.safety.eyekeep.user.domain.UserEntity;
 import com.safety.eyekeep.user.dto.JoinDTO;
 import com.safety.eyekeep.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -29,8 +30,8 @@ public class SignupService {
      * nickname 중복 체크
      * 중복되면 true return
      */
-    public boolean checkNameDuplicate(String name) {
-        return userRepository.existsByName(name);
+    public boolean checkNameDuplicate(String nickname) {
+        return userRepository.existsByNickname(nickname);
     }
 
     /**
@@ -41,10 +42,17 @@ public class SignupService {
         return password.equals(passwordCheck);
     }
 
-    /*
-      password가 8자리 이상 대, 소문자, 특수문자, 숫자를 포함했는 지 확인.
-      회원가입 기능 구현 시 사용.
+    /**
+     * @param username
+     * @return UserEntity
      */
+    public UserEntity findByUsername(String username) { return userRepository.findByUsername(username); }
+
+    /**
+     * @param nickname
+     * @return UserEntity
+     */
+    public UserEntity findByNickname(String nickname) { return userRepository.findByNickname(nickname); }
 
     /**
      * 회원가입 기능
@@ -54,6 +62,10 @@ public class SignupService {
      */
     public void join(JoinDTO dto) {
         userRepository.save(dto.toEntity(encoder.encode(dto.getPassword())));
+    }
+
+    public void save(UserEntity user) {
+        userRepository.save(user);
     }
 
 }

@@ -1,6 +1,5 @@
 package com.safety.eyekeep.user.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -9,16 +8,13 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
 public class RedisService {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    // TTL 설정 X
-    public void setValues(String key, String data) {
-        ValueOperations<String, Object> values = redisTemplate.opsForValue();
-        values.set(key, data);
+    public RedisService(RedisTemplate<String, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
     }
 
     // refrshToken TTL 설정 O
