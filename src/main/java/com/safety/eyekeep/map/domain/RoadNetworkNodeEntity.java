@@ -8,7 +8,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table(name = "Road_Network_Node")
+@Table
 public class RoadNetworkNodeEntity {
 
     @Id
