@@ -71,7 +71,6 @@ public class SecurityConfig {
                         .requestMatchers("/reissue").permitAll()
                         .requestMatchers("/signup").permitAll()
                         .requestMatchers("/signout").permitAll()
-                        .requestMatchers("/save/**").permitAll()
                         .requestMatchers("/safetydata/**").hasAuthority("ADMIN")
                         .requestMatchers("/save/location").hasAuthority("Child")
                         .requestMatchers("/request/location/**").hasAuthority("Parent")
